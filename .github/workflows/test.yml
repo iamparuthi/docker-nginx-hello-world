@@ -16,7 +16,6 @@ jobs:
         uses: favedom-dev/github-reusable-workflow/.github/workflows/app-setup.yaml@master
         with:
           OVERRIDE_NAME: pw-dims
-        id: app-setup
 
   repo-version:
     needs: app-setup
@@ -31,7 +30,6 @@ jobs:
           MONOREPO_APP: ${{ needs.app-setup.outputs.NAME }}
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        id: repo-version
 
   sast-scan:
     needs: [app-setup, repo-version]
