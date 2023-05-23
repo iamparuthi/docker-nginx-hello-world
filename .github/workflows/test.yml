@@ -7,6 +7,8 @@ on:
       
   workflow_run:
     workflows: main
+    types:
+      - completed
 jobs:
   app-setup:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/app-setup.yaml@master
@@ -21,7 +23,7 @@ jobs:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       
   sast-scan:
-    uses: robinjeya/docker-nginx-hello-world/.github/workflows/main.yml@master
+    uses: iamparuthi/docker-nginx-hello-world/.github/workflows/main.yml@master
     with:
       NAME: ${{ app-setup.outputs.NAME }}
       VERSION: ${{ repo-version.outputs.version }}
