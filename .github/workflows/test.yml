@@ -1,31 +1,19 @@
-name: CI
+name: Parent Workflow
 
 on:
-  push:
-    branches:
-      - master 
-      
-  workflow_call:
-    inputs:
-      config-path:
-        required: true
-        type: string
-jobs:
-  app-setup:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/app-setup.yaml@master
-    with:
-      OVERRIDE_NAME: pw-dims
+  workflow_run:
+    workflows: ["Trivy Image Scanning"]
+    types:
+      - completed
 
-  repo-version:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
-    with:
-      MONOREPO_APP: ${{ needs.app-setup.outputs.NAME }}
-    secrets:
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
-      
-  sast-scan:
-    uses: ./.github/workflows/main.yml
-    with:
-      NAME: ${{ app-setup.outputs.NAME }}
-      VERSION: ${{ repo-version.outputs.version }}
- 
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Run Child Workflow
+        uses: ./.github/workflows/main.yml
+        with:
+          input_parameter: "example value"
