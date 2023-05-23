@@ -3,28 +3,45 @@ name: CI
 on:
   push:
     branches:
-      - master 
+      - master
       
-  workflow_run:
-    workflows: main
-    types:
-      - completed
 jobs:
   app-setup:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/app-setup.yaml@master
-    with:
-      OVERRIDE_NAME: pw-dims
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      
+      - name: Run App Setup
+        uses: favedom-dev/github-reusable-workflow/.github/workflows/app-setup.yaml@master
+        with:
+          OVERRIDE_NAME: pw-dims
+        id: app-setup
 
   repo-version:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
-    with:
-      MONOREPO_APP: ${{ needs.app-setup.outputs.NAME }}
-    secrets:
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    needs: app-setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
       
+      - name: Run Repo Version
+        uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
+        with:
+          MONOREPO_APP: ${{ needs.app-setup.outputs.NAME }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        id: repo-version
+
   sast-scan:
-    uses: iamparuthi/docker-nginx-hello-world/.github/workflows/main.yml@master
-    with:
-      NAME: ${{ app-setup.outputs.NAME }}
-      VERSION: ${{ repo-version.outputs.version }}
- 
+    needs: [app-setup, repo-version]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      
+      - name: Run SAST Scan
+        uses: iamparuthi/docker-nginx-hello-world/.github/workflows/main.yml@master
+        with:
+          NAME: ${{ needs.app-setup.outputs.NAME }}
+          VERSION: ${{ needs.repo-version.outputs.version }}
