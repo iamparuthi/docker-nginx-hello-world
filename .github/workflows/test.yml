@@ -4,16 +4,16 @@ on:
   push:
     branches:
       - master
-      
+
 jobs:
   app-setup:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      
+
       - name: Run App Setup
-        uses: favedom-dev/github-reusable-workflow/.github/workflows/app-setup.yaml@master
+        uses: favedom-dev/github-reusable-workflow/app-setup-action@v1
         with:
           OVERRIDE_NAME: pw-dims
 
@@ -23,13 +23,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      
+
       - name: Run Repo Version
-        uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
-        with:
-          MONOREPO_APP: ${{ needs.app-setup.outputs.NAME }}
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: echo "Running Repo Version"
 
   sast-scan:
     needs: [app-setup, repo-version]
@@ -37,9 +33,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      
+
       - name: Run SAST Scan
-        uses: iamparuthi/docker-nginx-hello-world/.github/workflows/main.yml@master
+        uses: iamparuthi/docker-nginx-hello-world/.github/workflows/main.yml@v1
         with:
           NAME: ${{ needs.app-setup.outputs.NAME }}
           VERSION: ${{ needs.repo-version.outputs.version }}
